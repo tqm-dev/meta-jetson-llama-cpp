@@ -1,0 +1,80 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 23cfbce5a..4f6f2556c 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -12,6 +12,10 @@ if (NOT XCODE AND NOT MSVC AND NOT CMAKE_BUILD_TYPE)
+     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+ endif()
+ 
++if(NOT DEFINED ${CMAKE_CUDA_ARCHITECTURES})
++    set(CMAKE_CUDA_ARCHITECTURES 50 53 61)
++endif()
++
+ # Add path to modules
+ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
+ 
+diff --git a/ggml/CMakeLists.txt b/ggml/CMakeLists.txt
+index d33f843b4..9928425bb 100644
+--- a/ggml/CMakeLists.txt
++++ b/ggml/CMakeLists.txt
+@@ -272,6 +272,8 @@ set(GGML_PUBLIC_HEADERS
+     include/gguf.h)
+ 
+ set_target_properties(ggml PROPERTIES PUBLIC_HEADER "${GGML_PUBLIC_HEADERS}")
++target_link_libraries(ggml PRIVATE stdc++fs)
++add_link_options(-Wl,--copy-dt-needed-entries)
+ #if (GGML_METAL)
+ #    set_target_properties(ggml PROPERTIES RESOURCE "${CMAKE_CURRENT_SOURCE_DIR}/src/ggml-metal.metal")
+ #endif()
+diff --git a/ggml/src/ggml-cuda/common.cuh b/ggml/src/ggml-cuda/common.cuh
+index 8284a0017..264a4d6de 100644
+--- a/ggml/src/ggml-cuda/common.cuh
++++ b/ggml/src/ggml-cuda/common.cuh
+@@ -452,7 +452,7 @@ static __device__ __forceinline__ int ggml_cuda_dp4a(const int a, const int b, i
+ }
+ 
+ // TODO: move to ggml-common.h
+-static constexpr __device__ int8_t kvalues_iq4nl[16] = {-127, -104, -83, -65, -49, -35, -22, -10, 1, 13, 25, 38, 53, 69, 89, 113};
++static __device__ int8_t kvalues_iq4nl[16] = {-127, -104, -83, -65, -49, -35, -22, -10, 1, 13, 25, 38, 53, 69, 89, 113};
+ 
+ typedef void (*dequantize_kernel_t)(const void * vx, const int64_t ib, const int iqs, dfloat2 & v);
+ 
+diff --git a/ggml/src/ggml-cuda/fattn-common.cuh b/ggml/src/ggml-cuda/fattn-common.cuh
+index 3fe22092f..7ddaaca18 100644
+--- a/ggml/src/ggml-cuda/fattn-common.cuh
++++ b/ggml/src/ggml-cuda/fattn-common.cuh
+@@ -620,7 +620,7 @@ static __global__ void flash_attn_combine_results(
+     dst       +=                 D * gridDim.z*blockIdx.x;
+ 
+     const int tid = threadIdx.x;
+-    __builtin_assume(tid < D);
++//    __builtin_assume(tid < D);
+ 
+     extern __shared__ float2 meta[];
+     if (tid < 2*parallel_blocks) {
+diff --git a/ggml/src/ggml-cuda/fattn-vec-f16.cuh b/ggml/src/ggml-cuda/fattn-vec-f16.cuh
+index e17d2d0e4..b17e4cc37 100644
+--- a/ggml/src/ggml-cuda/fattn-vec-f16.cuh
++++ b/ggml/src/ggml-cuda/fattn-vec-f16.cuh
+@@ -70,7 +70,7 @@ static __global__ void flash_attn_vec_ext_f16(
+     static_assert(D % (2*WARP_SIZE) == 0, "D not divisible by 2*WARP_SIZE == 64.");
+     constexpr int nwarps = D / WARP_SIZE;
+     const int tid = WARP_SIZE*threadIdx.y + threadIdx.x;
+-    __builtin_assume(tid < D);
++//    __builtin_assume(tid < D);
+ 
+     __shared__ half KQ[ncols*D];
+     half2 * KQ2 = (half2 *) KQ;
+diff --git a/ggml/src/ggml-cuda/fattn-vec-f32.cuh b/ggml/src/ggml-cuda/fattn-vec-f32.cuh
+index 704874855..1c3bf4ef5 100644
+--- a/ggml/src/ggml-cuda/fattn-vec-f32.cuh
++++ b/ggml/src/ggml-cuda/fattn-vec-f32.cuh
+@@ -68,7 +68,7 @@ static __global__ void flash_attn_vec_ext_f32(
+     static_assert(D % (2*WARP_SIZE) == 0, "D not divisible by 2*WARP_SIZE == 64.");
+     constexpr int nwarps = D / WARP_SIZE;
+     const int tid = WARP_SIZE*threadIdx.y + threadIdx.x;
+-    __builtin_assume(tid < D);
++//    __builtin_assume(tid < D);
+ 
+     __shared__ float KQ[ncols*D];
+ #pragma unroll
