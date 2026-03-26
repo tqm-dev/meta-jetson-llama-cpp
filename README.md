@@ -264,8 +264,12 @@ generate: n_ctx = 4096, n_batch = 2048, n_predict = -1, n_keep = 1
  - Not using system message. To change it, set a different value via -sys PROMPT
 
 
-> hello world
-Hello there! How can I help you today? 😊
+> who are you ?
+Hi there! I’m Gemma, a large language model created by the Gemma team at Google DeepMind. I’m an open-weights model, which means I’m publicly available for use. 
+
+I’m here to help you with a variety of text-based tasks, like answering your questions, writing stories, and more. 
+
+How can I help you today?
 
 >
 ```
