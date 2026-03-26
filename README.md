@@ -1,6 +1,6 @@
 # Run llama.cpp on yocto linux for Jetson Nano (4GB) 
 
-This project is a fork/adaptation of [https://github.com/kreier/llama.cpp-jetson](llama.cpp-jetson)
+This project is a fork/adaptation of [llama.cpp-jetson](https://github.com/kreier/llama.cpp-jetson)
 
 ## 1. Checkout yocto layers for jetson nano
 ```
